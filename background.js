@@ -59,25 +59,71 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 function sendToWebhook(webhookUrl, info) {
-  let urlToSend = info.pageUrl;
-  if (info.linkUrl) {
-    urlToSend = info.linkUrl;
-  } else if (info.srcUrl) {
-    urlToSend = info.srcUrl;
-  }
+  let urlToSend = info.pageUrl;  // Default to page URL
+  let titleToSend = null;
 
+  if (info.linkUrl) {
+    urlToSend = info.linkUrl;  // If it's a link, override the URL
+    // Extract title attribute from the link
+    chrome.scripting.executeScript({
+      target: { tabId: info.tabId },
+      function: getLinkTitle,
+      args: [info.linkUrl]
+    }, (injectionResults) => {
+      titleToSend = (injectionResults && injectionResults[0]) ? injectionResults[0].result : null;
+      postToWebhook(webhookUrl, urlToSend, titleToSend);
+    });
+  } else if (info.srcUrl) {
+    urlToSend = info.srcUrl;  // If it's an image, override the URL
+    // Extract alt attribute from the image
+    chrome.scripting.executeScript({
+      target: { tabId: info.tabId },
+      function: getImageAlt,
+      args: [info.srcUrl]
+    }, (injectionResults) => {
+      titleToSend = (injectionResults && injectionResults[0]) ? injectionResults[0].result : null;
+      postToWebhook(webhookUrl, urlToSend, titleToSend);
+    });
+  } else {
+    // Extract title of the page
+    chrome.scripting.executeScript({
+      target: { tabId: info.tabId },
+      function: getPageTitle
+    }, (injectionResults) => {
+      titleToSend = (injectionResults && injectionResults[0]) ? injectionResults[0].result : null;
+      postToWebhook(webhookUrl, urlToSend, titleToSend);
+    });
+  }
+}
+
+function postToWebhook(webhookUrl, url, title) {
   fetch(webhookUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ url: urlToSend })
+    body: JSON.stringify({ url: url, title: title })
   }).then(response => {
     console.log('Webhook sent with response status:', response.status);
   }).catch(error => {
     console.error('Error sending webhook:', error);
   });
 }
+
+function getPageTitle() {
+  return document.title;  // Returns the title of the current page
+}
+
+function getLinkTitle(linkUrl) {
+  const link = document.querySelector(`a[href="${linkUrl}"]`);
+  return link ? link.title : null;  // Returns the title attribute of the link if available
+}
+
+function getImageAlt(imageSrc) {
+  const img = document.querySelector(`img[src="${imageSrc}"]`);
+  return img ? img.alt : null;  // Returns the alt attribute of the image if available
+}
+
 
 
 // Listen for changes in the webhooks data to update context menus
