@@ -4,6 +4,14 @@ document.getElementById('webhookForm').addEventListener('submit', function (e) {
   const name = document.getElementById('name').value;
 
   chrome.storage.local.get({ webhooks: [] }, function (data) {
+
+    // Error handling here
+    if (chrome.runtime.lastError) {
+      console.error('Error retrieving webhooks:', chrome.runtime.lastError);
+      alert('Error retrieving webhooks. Please try again.');
+      return;
+    }
+
     let webhooks = data.webhooks;
     const index = document.getElementById('webhookForm').dataset.index;
     if (index !== undefined) {
@@ -14,6 +22,12 @@ document.getElementById('webhookForm').addEventListener('submit', function (e) {
       webhooks.push({ url, name });
     }
     chrome.storage.local.set({ webhooks: webhooks }, function () {
+      // Error handling here
+      if (chrome.runtime.lastError) {
+        console.error('Failed to save the webhook:', chrome.runtime.lastError);
+        alert('Error saving webhook. Please try again.');
+        return;
+      }
       console.log('Webhook saved!');
       loadWebhooks(); // Refresh list after saving
       clearForm(); // Clear the form fields
@@ -23,6 +37,13 @@ document.getElementById('webhookForm').addEventListener('submit', function (e) {
 
 function loadWebhooks() {
   chrome.storage.local.get('webhooks', function (data) {
+    // Error handling here
+    if (chrome.runtime.lastError) {
+      console.error('Failed to load webhooks:', chrome.runtime.lastError);
+      alert('Error loading webhooks. Please try again.');
+      return;
+    }
+
     const list = document.getElementById('webhookList');
     list.innerHTML = '';
     data.webhooks.forEach(function (hook, index) {
@@ -78,9 +99,21 @@ function updateWebhook(index) {
 
 function deleteWebhook(index) {
   chrome.storage.local.get('webhooks', function (data) {
+    // Error handling here
+    if (chrome.runtime.lastError) {
+      console.error('Failed to fetch webhooks:', chrome.runtime.lastError);
+      alert('Error fetching webhooks. Please try again.');
+      return;
+    }
+
     let webhooks = data.webhooks;
     webhooks.splice(index, 1);
     chrome.storage.local.set({ webhooks: webhooks }, function () {
+      if (chrome.runtime.lastError) {
+        console.error('Failed to delete webhook:', chrome.runtime.lastError);
+        alert('Error deleting webhook. Please try again.');
+        return;
+      }
       console.log('Webhook deleted!');
       loadWebhooks(); // Refresh list after deleting
     });
