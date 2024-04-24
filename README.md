@@ -1,5 +1,11 @@
 # Webhook Manager Chrome Extension
 
+This extension was born out of an irresistible drive to solve a specific problem: the need to send URLs of elements on a webpage directly to my N8N workflow for automating my tech watch. In the world of software development, finding no existing solutions that support the latest Chrome Manifest V3 was not just a challenge—it was an unavoidable call to action. For someone with ADHD, the impulse to dive deep into a problem and craft a solution isn't just a choice; it's often an innate response that cannot be ignored.
+
+The rapid creation of the first prototype within an hour and the additional enhancements over the next two hours are reflections of how ADHD can fuel intense periods of focus and productivity, known as hyperfocus. This intense engagement with tasks that capture our interest is a common trait among those with ADHD, leading us to achieve remarkable feats in bursts of passion and creativity.
+
+This project isn't merely a functional tool; it's a personal statement and a beacon for others in the tech industry who might find themselves similarly driven by their neurodivergent traits. It serves as a reminder that our unique wiring can lead to powerful bursts of innovation and that embracing this can lead to practical, impactful solutions. Here's to all the software developers living with ADHD: Your intense need to solve problems, create solutions, or improve systems is not just a challenge—it's also your superpower.
+
 ## Features
 
 - **Register and Manage Webhooks**: Users can add, edit, and delete webhooks with a friendly name and URL.
