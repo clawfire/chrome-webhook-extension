@@ -58,7 +58,7 @@ function loadWebhooks() {
       deleteButton.innerHTML = `<i class="fa fa-light fa-trash-xmark"></i>`;
       deleteButton.className = 'pure-button';
       deleteButton.onclick = function () {
-        deleteWebhook(index); // Implement this function to handle deletion
+        handleDeleteClick(deleteButton, index);
       };
 
       // Create the edit button
@@ -83,6 +83,25 @@ function loadWebhooks() {
   });
 }
 
+function handleDeleteClick(button, index) {
+  if (button.textContent === 'Confirm?') {
+    // If button already clicked once, perform the deletion
+    deleteWebhook(index);
+  } else {
+    // First click, prompt for confirmation
+    button.textContent = 'Confirm?';
+    button.classList.add('button-warning');
+    // Revert if clicked elsewhere
+    document.addEventListener('click', function eventListener(e) {
+      if (!button.contains(e.target)) {
+        button.innerHTML = `<i class="fa fa-light fa-trash-xmark"></i>`;
+        button.classList.remove('button-warning');
+        document.removeEventListener('click', eventListener);
+      }
+    }, { once: true });
+  }
+}
+
 function editWebhook(index) {
   chrome.storage.local.get('webhooks', function (data) {
     const webhooks = data.webhooks;
@@ -99,7 +118,6 @@ function updateWebhook(index) {
 
 function deleteWebhook(index) {
   chrome.storage.local.get('webhooks', function (data) {
-    // Error handling here
     if (chrome.runtime.lastError) {
       console.error('Failed to fetch webhooks:', chrome.runtime.lastError);
       alert('Error fetching webhooks. Please try again.');
@@ -119,6 +137,7 @@ function deleteWebhook(index) {
     });
   });
 }
+
 
 function clearForm() {
   document.getElementById('url').value = '';
