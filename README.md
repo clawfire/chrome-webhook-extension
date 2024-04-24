@@ -41,3 +41,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 - Font Awesome for icons used in the popup UI and the project's icon.
 - Pure CSS for styling.
+- OpenAI's ChatGPT for assisting in the development of this Chrome extension, providing coding guidance, error handling strategies, and documentation.
