@@ -3,17 +3,32 @@
 
 <head>
   <title>Webhook Manager</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+    integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://kit.fontawesome.com/fbe538cf33.css" crossorigin="anonymous">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .content{
+      margin: 1em 0.5em;
+    }
+    #webhookList{
+      list-style: none;
+      padding: 0;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Register or Update a Webhook</h1>
-  <form id="webhookForm">
-    <input type="text" id="url" placeholder="Enter Webhook URL" required>
-    <input type="text" id="name" placeholder="Friendly Name" required>
-    <button type="submit">Save</button>
-  </form>
-  <h2>Registered Webhooks</h2>
-  <ul id="webhookList"></ul>
+  <div class="content">
+    <h1>Register or Update a Webhook</h1>
+    <form id="webhookForm" class="pure-form pure-form-stacked">
+      <input type="text" id="url" class="pure-input-1" placeholder="Enter Webhook URL" required>
+      <input type="text" id="name" class="pure-input-1" placeholder="Friendly Name" required>
+      <button type="submit" class="pure-button pure-button-primary pure-input-1-4">Save</button>
+    </form>
+    <h2>Registered Webhooks</h2>
+    <ul id="webhookList"></ul>
+  </div>
   <script src="popup.js"></script>
 </body>
 

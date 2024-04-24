@@ -26,16 +26,37 @@ function loadWebhooks() {
     const list = document.getElementById('webhookList');
     list.innerHTML = '';
     data.webhooks.forEach(function (hook, index) {
+      // Create the container div for the button group
+      const buttonGroup = document.createElement('div');
+      buttonGroup.className = 'pure-button-group';
+      buttonGroup.setAttribute('role', 'group');
+      buttonGroup.setAttribute('aria-label', 'Webhook actions');
+
+      // Create the delete button
+      const deleteButton = document.createElement('button');
+      deleteButton.innerHTML = `<i class="fa fa-light fa-trash-xmark"></i>`;
+      deleteButton.className = 'pure-button';
+      deleteButton.onclick = function () {
+        deleteWebhook(index); // Implement this function to handle deletion
+      };
+
+      // Create the edit button
+      const editButton = document.createElement('button');
+      editButton.innerHTML = `<i class="fa fa-light fa-pen"></i>`;
+      editButton.className = 'pure-button';
+      editButton.onclick = function () {
+        editWebhook(index); // Implement this function to handle editing
+      };
+
+      // Append buttons to the button group
+      buttonGroup.appendChild(editButton);
+      buttonGroup.appendChild(deleteButton);
+
       const item = document.createElement('li');
       item.textContent = `${hook.name}: ${hook.url}`;
-      const editBtn = document.createElement('button');
-      editBtn.textContent = 'Edit';
-      editBtn.onclick = function () { editWebhook(index); };
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.onclick = function () { deleteWebhook(index); };
-      item.appendChild(editBtn);
-      item.appendChild(deleteBtn);
+
+      // Append the button group to the list container
+      item.appendChild(buttonGroup);
       list.appendChild(item);
     });
   });
