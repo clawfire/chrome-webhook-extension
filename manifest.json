@@ -2,7 +2,13 @@
   "manifest_version": 3,
   "name": "Webhook Manager",
   "version": "1.0",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
