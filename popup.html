@@ -8,12 +8,21 @@
   <link rel="stylesheet" href="https://kit.fontawesome.com/fbe538cf33.css" crossorigin="anonymous">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    body, html {
+        min-width: 300px; /* Set the minimum width */
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif; /* Example font */
+    }
+
     .content{
       margin: 1em 0.5em;
     }
     #webhookList{
       list-style: none;
       padding: 0;
+      max-height: 1200px; /* Maximum height before scrolling */
+      overflow-y: auto; /* Enables vertical scrolling */
     }
     #webhookList li{
       margin: 0.5em 0;

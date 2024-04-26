@@ -52,48 +52,52 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.storage.local.get('webhooks', function (data) {
       const webhook = data.webhooks.find(wh => `sendTo${wh.name}` === info.menuItemId);
       if (webhook) {
-        sendToWebhook(webhook.url, info);
+        sendToWebhook(webhook.url, info, tab.id);
       }
     });
   }
 });
 
-function sendToWebhook(webhookUrl, info) {
-  let urlToSend = info.pageUrl;  // Default to page URL
-  let titleToSend = null;
-
+function sendToWebhook(webhookUrl, info, tabId) {
   if (info.linkUrl) {
-    urlToSend = info.linkUrl;  // If it's a link, override the URL
-    // Extract title attribute from the link
-    chrome.scripting.executeScript({
-      target: { tabId: info.tabId },
-      function: getLinkTitle,
-      args: [info.linkUrl]
-    }, (injectionResults) => {
-      titleToSend = (injectionResults && injectionResults[0]) ? injectionResults[0].result : null;
-      postToWebhook(webhookUrl, urlToSend, titleToSend);
-    });
+    extractDataAndSend(webhookUrl, info.linkUrl, 'link', tabId);
   } else if (info.srcUrl) {
-    urlToSend = info.srcUrl;  // If it's an image, override the URL
-    // Extract alt attribute from the image
-    chrome.scripting.executeScript({
-      target: { tabId: info.tabId },
-      function: getImageAlt,
-      args: [info.srcUrl]
-    }, (injectionResults) => {
-      titleToSend = (injectionResults && injectionResults[0]) ? injectionResults[0].result : null;
-      postToWebhook(webhookUrl, urlToSend, titleToSend);
-    });
+    extractDataAndSend(webhookUrl, info.srcUrl, 'image', tabId);
   } else {
-    // Extract title of the page
-    chrome.scripting.executeScript({
-      target: { tabId: info.tabId },
-      function: getPageTitle
-    }, (injectionResults) => {
-      titleToSend = (injectionResults && injectionResults[0]) ? injectionResults[0].result : null;
-      postToWebhook(webhookUrl, urlToSend, titleToSend);
-    });
+    extractDataAndSend(webhookUrl, info.pageUrl, 'page', tabId);
   }
+}
+
+function extractDataAndSend(webhookUrl, urlToSend, type, tabId) {
+  let codeToExecute;
+
+  if (type === 'page') {
+    codeToExecute = function () {
+      return document.title;
+    };
+  } else if (type === 'link') {
+    codeToExecute = function () {
+      const link = document.querySelector(`a[href="${urlToSend}"]`);
+      return link ? link.title : null;
+    };
+  } else if (type === 'image') {
+    codeToExecute = function () {
+      const img = document.querySelector(`img[src="${urlToSend}"]`);
+      return img ? img.alt : null;
+    };
+  }
+
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    func: codeToExecute,
+  }, (injectionResults) => {
+    if (chrome.runtime.lastError) {
+      console.error('Script injection failed:', chrome.runtime.lastError.message);
+      return;
+    }
+    const titleToSend = injectionResults[0]?.result;
+    postToWebhook(webhookUrl, urlToSend, titleToSend);
+  });
 }
 
 function postToWebhook(webhookUrl, url, title) {
