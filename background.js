@@ -77,19 +77,30 @@ function extractDataAndSend(webhookUrl, urlToSend, type, tabId) {
     };
   } else if (type === 'link') {
     codeToExecute = function () {
-      const link = document.querySelector(`a[href="${urlToSend}"]`);
-      return link ? link.title : null;
+      const links = document.querySelectorAll('a');
+      for (let link of links) {
+        if (link.href === arguments[0]) {
+          return link.title || null;
+        }
+      }
+      return null;
     };
   } else if (type === 'image') {
     codeToExecute = function () {
-      const img = document.querySelector(`img[src="${urlToSend}"]`);
-      return img ? img.alt : null;
+      const images = document.querySelectorAll('img');
+      for (let img of images) {
+        if (img.src === arguments[0]) {
+          return img.alt || null;
+        }
+      }
+      return null;
     };
   }
 
   chrome.scripting.executeScript({
     target: { tabId: tabId },
     func: codeToExecute,
+    args: [urlToSend]
   }, (injectionResults) => {
     if (chrome.runtime.lastError) {
       console.error('Script injection failed:', chrome.runtime.lastError.message);
@@ -131,5 +142,4 @@ function getImageAlt(imageSrc) {
 
 
 // Listen for changes in the webhooks data to update context menus
-chrome.runtime.onStartup.addListener(updateWebhookMenus);
 chrome.storage.onChanged.addListener(updateWebhookMenus);

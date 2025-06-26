@@ -46,7 +46,8 @@ function loadWebhooks() {
 
     const list = document.getElementById('webhookList');
     list.innerHTML = '';
-    data.webhooks.forEach(function (hook, index) {
+    if (data.webhooks && data.webhooks.length > 0) {
+      data.webhooks.forEach(function (hook, index) {
       // Create the container div for the button group
       const buttonGroup = document.createElement('div');
       buttonGroup.className = 'pure-button-group';
@@ -76,10 +77,11 @@ function loadWebhooks() {
       const item = document.createElement('li');
       item.textContent = `${hook.name}: ${hook.url}`;
 
-      // Append the button group to the list container
-      item.appendChild(buttonGroup);
-      list.appendChild(item);
-    });
+        // Append the button group to the list container
+        item.appendChild(buttonGroup);
+        list.appendChild(item);
+      });
+    }
   });
 }
 
