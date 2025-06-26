@@ -43,11 +43,21 @@ function updateWebhookMenus() {
           if (data.webhooks && data.webhooks.length > 0) {
             data.webhooks.forEach((webhook, index) => {
               const sanitizedId = sanitizeMenuId(webhook.name);
+              
+              // Create menu item for page, link, and image contexts
               chrome.contextMenus.create({
-                id: `sendTo_${sanitizedId}_${index}`,
+                id: `sendTo_${sanitizedId}_${index}_normal`,
                 parentId: "sendToWebhook",
                 title: webhook.name,
-                contexts: ["page", "link", "image", "selection"]
+                contexts: ["page", "link", "image"]
+              });
+              
+              // Create separate menu item for selection context
+              chrome.contextMenus.create({
+                id: `sendTo_${sanitizedId}_${index}_selection`,
+                parentId: "sendToWebhook",
+                title: webhook.name,
+                contexts: ["selection"]
               });
             });
           }
@@ -60,9 +70,10 @@ function updateWebhookMenus() {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId.startsWith("sendTo_")) {
     chrome.storage.local.get('webhooks', function (data) {
-      // Extract index from menu ID (sendTo_sanitizedName_index)
+      // Extract index from menu ID (sendTo_sanitizedName_index_type)
       const parts = info.menuItemId.split('_');
-      const index = parseInt(parts[parts.length - 1]);
+      const indexPart = parts[parts.length - 2]; // Second to last part is the index
+      const index = parseInt(indexPart);
       const webhook = data.webhooks[index];
       if (webhook) {
         sendToWebhook(webhook.url, info, tab.id);
