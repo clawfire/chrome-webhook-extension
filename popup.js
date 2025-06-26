@@ -92,6 +92,14 @@ function loadWebhooks() {
         handleDeleteClick(deleteButton, index);
       };
 
+      // Create the test button
+      const testButton = document.createElement('button');
+      testButton.innerHTML = `<i class="fa fa-light fa-vial"></i>`;
+      testButton.className = 'pure-button';
+      testButton.onclick = function () {
+        testWebhook(index, testButton);
+      };
+
       // Create the edit button
       const editButton = document.createElement('button');
       editButton.innerHTML = `<i class="fa fa-light fa-pen"></i>`;
@@ -101,6 +109,7 @@ function loadWebhooks() {
       };
 
       // Append buttons to the button group
+      buttonGroup.appendChild(testButton);
       buttonGroup.appendChild(editButton);
       buttonGroup.appendChild(deleteButton);
 
@@ -167,6 +176,87 @@ function deleteWebhook(index) {
   });
 }
 
+
+function testWebhook(index, buttonElement) {
+  chrome.storage.local.get('webhooks', function (data) {
+    if (chrome.runtime.lastError) {
+      console.error('Failed to fetch webhooks:', chrome.runtime.lastError);
+      showError('Error fetching webhooks. Please try again.');
+      return;
+    }
+
+    const webhook = data.webhooks[index];
+    if (!webhook) {
+      showError('Webhook not found.');
+      return;
+    }
+
+    // Update button to show testing state
+    const originalContent = buttonElement.innerHTML;
+    buttonElement.innerHTML = `<i class="fa fa-spinner fa-spin"></i>`;
+    buttonElement.disabled = true;
+
+    const startTime = Date.now();
+    const testPayload = {
+      url: 'https://example.com/test',
+      title: 'Test webhook from Chrome Extension'
+    };
+
+    fetch(webhook.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(testPayload)
+    }).then(response => {
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+
+      // Reset button
+      buttonElement.innerHTML = originalContent;
+      buttonElement.disabled = false;
+
+      if (response.ok) {
+        buttonElement.innerHTML = `<i class="fa fa-check" style="color: green;"></i>`;
+        showSuccess(`${webhook.name} test successful (${responseTime}ms)`);
+        setTimeout(() => {
+          buttonElement.innerHTML = originalContent;
+        }, 3000);
+      } else {
+        buttonElement.innerHTML = `<i class="fa fa-times" style="color: red;"></i>`;
+        showError(`${webhook.name} test failed: HTTP ${response.status} (${responseTime}ms)`);
+        setTimeout(() => {
+          buttonElement.innerHTML = originalContent;
+        }, 3000);
+      }
+    }).catch(error => {
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+
+      // Reset button
+      buttonElement.innerHTML = `<i class="fa fa-times" style="color: red;"></i>`;
+      buttonElement.disabled = false;
+
+      showError(`${webhook.name} test error: ${error.message} (${responseTime}ms)`);
+      setTimeout(() => {
+        buttonElement.innerHTML = originalContent;
+      }, 3000);
+    });
+  });
+}
+
+function showSuccess(message) {
+  const errorDiv = document.getElementById('error-message');
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.background = '#51cf66';
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+      errorDiv.style.display = 'none';
+      errorDiv.style.background = '#ff6b6b';
+    }, 5000);
+  }
+}
 
 function clearForm() {
   document.getElementById('url').value = '';
