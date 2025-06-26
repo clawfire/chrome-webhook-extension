@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "sendToWebhook",
     title: "Send to Webhook",
-    contexts: ["page", "link", "image"]
+    contexts: ["page", "link", "image", "selection"]
   }, () => {
     if (chrome.runtime.lastError) {
       console.error(`Error creating parent menu: ${chrome.runtime.lastError.message}`);
@@ -30,7 +30,7 @@ function updateWebhookMenus() {
       chrome.contextMenus.create({
         id: "sendToWebhook",
         title: "Send to Webhook",
-        contexts: ["page", "link", "image"]
+        contexts: ["page", "link", "image", "selection"]
       }, () => {
         // Check for errors
         if (chrome.runtime.lastError) {
@@ -47,7 +47,7 @@ function updateWebhookMenus() {
                 id: `sendTo_${sanitizedId}_${index}`,
                 parentId: "sendToWebhook",
                 title: webhook.name,
-                contexts: ["page", "link", "image"]
+                contexts: ["page", "link", "image", "selection"]
               });
             });
           }
@@ -73,20 +73,37 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 function sendToWebhook(webhookUrl, info, tabId) {
   if (info.linkUrl) {
-    extractDataAndSend(webhookUrl, info.linkUrl, 'link', tabId);
+    extractDataAndSend(webhookUrl, info.linkUrl, 'link', tabId, null);
   } else if (info.srcUrl) {
-    extractDataAndSend(webhookUrl, info.srcUrl, 'image', tabId);
+    extractDataAndSend(webhookUrl, info.srcUrl, 'image', tabId, null);
   } else {
-    extractDataAndSend(webhookUrl, info.pageUrl, 'page', tabId);
+    // Page context: check if text is selected
+    const type = info.selectionText ? 'selection' : 'page';
+    const urlToSend = info.pageUrl;
+    extractDataAndSend(webhookUrl, urlToSend, type, tabId, info.selectionText);
   }
 }
 
-function extractDataAndSend(webhookUrl, urlToSend, type, tabId) {
+function extractDataAndSend(webhookUrl, urlToSend, type, tabId, selectionText) {
   let codeToExecute;
 
   if (type === 'page') {
     codeToExecute = function () {
-      return document.title;
+      return {
+        title: document.title,
+        description: document.querySelector('meta[name="description"]')?.getAttribute('content') || null,
+        keywords: document.querySelector('meta[name="keywords"]')?.getAttribute('content') || null,
+        favicon: document.querySelector('link[rel="icon"]')?.href || document.querySelector('link[rel="shortcut icon"]')?.href || null
+      };
+    };
+  } else if (type === 'selection') {
+    codeToExecute = function () {
+      return {
+        title: document.title,
+        description: document.querySelector('meta[name="description"]')?.getAttribute('content') || null,
+        keywords: document.querySelector('meta[name="keywords"]')?.getAttribute('content') || null,
+        favicon: document.querySelector('link[rel="icon"]')?.href || document.querySelector('link[rel="shortcut icon"]')?.href || null
+      };
     };
   } else if (type === 'link') {
     codeToExecute = function () {
@@ -119,13 +136,40 @@ function extractDataAndSend(webhookUrl, urlToSend, type, tabId) {
       console.error('Script injection failed:', chrome.runtime.lastError.message);
       return;
     }
-    const titleToSend = injectionResults[0]?.result;
+    const extractedData = injectionResults[0]?.result;
     
     // Find webhook name for notification
     chrome.storage.local.get('webhooks', function (data) {
       const webhook = data.webhooks?.find(wh => wh.url === webhookUrl);
       const webhookName = webhook ? webhook.name : 'Webhook';
-      postToWebhook(webhookUrl, urlToSend, titleToSend, 3, webhookName);
+      
+      // Build enhanced payload
+      const payload = {
+        url: urlToSend,
+        timestamp: new Date().toISOString(),
+        type: type
+      };
+
+      if (type === 'page') {
+        payload.title = extractedData?.title || null;
+        payload.description = extractedData?.description || null;
+        payload.keywords = extractedData?.keywords || null;
+        payload.favicon = extractedData?.favicon || null;
+      } else if (type === 'selection') {
+        payload.title = extractedData?.title || null;
+        payload.description = extractedData?.description || null;
+        payload.keywords = extractedData?.keywords || null;
+        payload.favicon = extractedData?.favicon || null;
+        payload.selectedText = selectionText;
+      } else if (type === 'link') {
+        payload.title = extractedData;
+        payload.linkTitle = extractedData;
+      } else if (type === 'image') {
+        payload.title = extractedData;
+        payload.altText = extractedData;
+      }
+
+      postToWebhook(webhookUrl, payload, 3, webhookName);
     });
   });
 }
@@ -140,9 +184,7 @@ function showNotification(title, message, isSuccess = true) {
   });
 }
 
-function postToWebhook(webhookUrl, url, title, retryCount = 3, webhookName = 'Webhook') {
-  const payload = { url: url, title: title };
-  
+function postToWebhook(webhookUrl, payload, retryCount = 3, webhookName = 'Webhook') {
   fetch(webhookUrl, {
     method: 'POST',
     headers: {
@@ -152,19 +194,19 @@ function postToWebhook(webhookUrl, url, title, retryCount = 3, webhookName = 'We
   }).then(response => {
     if (!response.ok && retryCount > 0) {
       console.log(`Webhook failed with status ${response.status}, retrying... (${retryCount} attempts left)`);
-      setTimeout(() => postToWebhook(webhookUrl, url, title, retryCount - 1, webhookName), 1000);
+      setTimeout(() => postToWebhook(webhookUrl, payload, retryCount - 1, webhookName), 1000);
     } else if (response.ok) {
       console.log('Webhook sent with response status:', response.status);
-      showNotification(`✅ ${webhookName} - Success`, `URL sent successfully to ${webhookName}`, true);
+      showNotification(`✅ ${webhookName} - Success`, `Data sent successfully to ${webhookName}`, true);
     } else {
       console.log('Webhook failed after all retries');
-      showNotification(`❌ ${webhookName} - Failed`, `Failed to send URL after 3 attempts`, false);
+      showNotification(`❌ ${webhookName} - Failed`, `Failed to send data after 3 attempts`, false);
     }
   }).catch(error => {
     console.error('Error sending webhook:', error);
     if (retryCount > 0) {
       console.log(`Retrying webhook in 2 seconds... (${retryCount} attempts left)`);
-      setTimeout(() => postToWebhook(webhookUrl, url, title, retryCount - 1, webhookName), 2000);
+      setTimeout(() => postToWebhook(webhookUrl, payload, retryCount - 1, webhookName), 2000);
     } else {
       showNotification(`❌ ${webhookName} - Error`, `Network error: ${error.message}`, false);
     }

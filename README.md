@@ -9,9 +9,13 @@ This project isn't merely a functional tool; it's a personal statement and a bea
 ## Features
 
 - **Register and Manage Webhooks**: Users can add, edit, and delete webhooks with a friendly name and URL.
-- **Context Menu Integration**: Right-click on any page, link, or image to send the current URL to a registered webhook. Additional context-specific attributes like page titles or image alt text are also sent.
+- **Context Menu Integration**: Right-click on any page, link, image, or selected text to send data to a registered webhook.
+- **Enhanced Data Collection**: Automatically extracts page metadata, timestamps, and context-specific information.
+- **Webhook Testing**: Test webhooks directly from the popup with response time and status feedback.
+- **Smart Notifications**: Desktop notifications with emoji feedback (✅/❌) for webhook status.
+- **URL Validation**: Built-in validation ensures only valid HTTP/HTTPS URLs are accepted.
+- **Retry Mechanism**: Automatic retry (up to 3 attempts) for failed webhook calls.
 - **Secure Storage**: All webhook information is securely stored using Chrome's local storage.
-- **User Confirmation for Deletion**: Ensures that deletions are intentional with a two-click confirmation process on the delete button.
 
 ## Installation
 
@@ -23,9 +27,71 @@ This project isn't merely a functional tool; it's a personal statement and a bea
 ## Usage
 
 - **Adding a Webhook**: Click on the extension icon, fill in the URL and a friendly name, and click "Save".
+- **Testing a Webhook**: Click the test tube icon (🧪) next to any webhook to verify it's working.
 - **Editing a Webhook**: Click the "Edit" icon next to the webhook you want to change.
 - **Deleting a Webhook**: Click the "Delete" button next to the webhook you want to remove, then click again when it changes to "Confirm?".
-- **Using a Webhook**: Right-click on a page, link, or image, hover over "Send to Webhook", and select the desired webhook.
+- **Using a Webhook**: Right-click on a page, link, image, or selected text, hover over "Send to Webhook", and select the desired webhook.
+
+## Webhook Payload Examples
+
+The extension sends different payload structures depending on the context:
+
+### Page Context (right-click on page)
+```json
+{
+  "url": "https://example.com/article",
+  "timestamp": "2024-06-26T15:30:45.123Z",
+  "type": "page",
+  "title": "Article Title",
+  "description": "Article description from meta tag",
+  "keywords": "technology, programming, tutorial",
+  "favicon": "https://example.com/favicon.ico"
+}
+```
+
+### Selected Text Context (right-click on selected text)
+```json
+{
+  "url": "https://example.com/article",
+  "timestamp": "2024-06-26T15:30:45.123Z",
+  "type": "selection",
+  "title": "Article Title",
+  "description": "Article description from meta tag",
+  "keywords": "technology, programming, tutorial",
+  "favicon": "https://example.com/favicon.ico",
+  "selectedText": "This is the selected text from the page"
+}
+```
+
+### Link Context (right-click on a link)
+```json
+{
+  "url": "https://linked-page.com",
+  "timestamp": "2024-06-26T15:30:45.123Z",
+  "type": "link",
+  "title": "Link title attribute",
+  "linkTitle": "Link title attribute"
+}
+```
+
+### Image Context (right-click on an image)
+```json
+{
+  "url": "https://example.com/image.jpg",
+  "timestamp": "2024-06-26T15:30:45.123Z",
+  "type": "image",
+  "title": "Image alt text",
+  "altText": "Image alt text"
+}
+```
+
+### Test Webhook Payload
+```json
+{
+  "url": "https://example.com/test",
+  "title": "Test webhook from Chrome Extension"
+}
+```
 
 ## Configuration
 
