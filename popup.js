@@ -1,14 +1,44 @@
+function validateURL(url) {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+  } catch (e) {
+    return false;
+  }
+}
+
+function showError(message) {
+  const errorDiv = document.getElementById('error-message');
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+      errorDiv.style.display = 'none';
+    }, 5000);
+  }
+}
+
 document.getElementById('webhookForm').addEventListener('submit', function (e) {
   e.preventDefault();
-  const url = document.getElementById('url').value;
-  const name = document.getElementById('name').value;
+  const url = document.getElementById('url').value.trim();
+  const name = document.getElementById('name').value.trim();
+
+  if (!url || !name) {
+    showError('Both URL and name are required.');
+    return;
+  }
+
+  if (!validateURL(url)) {
+    showError('Please enter a valid HTTP or HTTPS URL.');
+    return;
+  }
 
   chrome.storage.local.get({ webhooks: [] }, function (data) {
 
     // Error handling here
     if (chrome.runtime.lastError) {
       console.error('Error retrieving webhooks:', chrome.runtime.lastError);
-      alert('Error retrieving webhooks. Please try again.');
+      showError('Error retrieving webhooks. Please try again.');
       return;
     }
 
@@ -25,7 +55,7 @@ document.getElementById('webhookForm').addEventListener('submit', function (e) {
       // Error handling here
       if (chrome.runtime.lastError) {
         console.error('Failed to save the webhook:', chrome.runtime.lastError);
-        alert('Error saving webhook. Please try again.');
+        showError('Error saving webhook. Please try again.');
         return;
       }
       console.log('Webhook saved!');
@@ -40,7 +70,7 @@ function loadWebhooks() {
     // Error handling here
     if (chrome.runtime.lastError) {
       console.error('Failed to load webhooks:', chrome.runtime.lastError);
-      alert('Error loading webhooks. Please try again.');
+      showError('Error loading webhooks. Please try again.');
       return;
     }
 
@@ -119,7 +149,7 @@ function deleteWebhook(index) {
   chrome.storage.local.get('webhooks', function (data) {
     if (chrome.runtime.lastError) {
       console.error('Failed to fetch webhooks:', chrome.runtime.lastError);
-      alert('Error fetching webhooks. Please try again.');
+      showError('Error fetching webhooks. Please try again.');
       return;
     }
 
@@ -128,7 +158,7 @@ function deleteWebhook(index) {
     chrome.storage.local.set({ webhooks: webhooks }, function () {
       if (chrome.runtime.lastError) {
         console.error('Failed to delete webhook:', chrome.runtime.lastError);
-        alert('Error deleting webhook. Please try again.');
+        showError('Error deleting webhook. Please try again.');
         return;
       }
       console.log('Webhook deleted!');

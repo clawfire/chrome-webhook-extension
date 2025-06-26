@@ -33,12 +33,22 @@
         color: white;
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
     }
+    #error-message {
+        display: none;
+        background: #ff6b6b;
+        color: white;
+        padding: 0.5em;
+        margin: 0.5em 0;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
   </style>
 </head>
 
 <body>
   <div class="content">
     <h1>Register or Update a Webhook</h1>
+    <div id="error-message"></div>
     <form id="webhookForm" class="pure-form pure-form-stacked">
       <input type="text" id="url" class="pure-input-1" placeholder="Enter Webhook URL" required>
       <input type="text" id="name" class="pure-input-1" placeholder="Friendly Name" required>
