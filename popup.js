@@ -114,9 +114,6 @@ function editWebhook(index) {
   });
 }
 
-function updateWebhook(index) {
-  // This function is no longer needed because the main form's submit handler takes care of updating
-}
 
 function deleteWebhook(index) {
   chrome.storage.local.get('webhooks', function (data) {

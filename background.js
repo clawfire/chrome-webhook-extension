@@ -125,21 +125,5 @@ function postToWebhook(webhookUrl, url, title) {
   });
 }
 
-function getPageTitle() {
-  return document.title;  // Returns the title of the current page
-}
-
-function getLinkTitle(linkUrl) {
-  const link = document.querySelector(`a[href="${linkUrl}"]`);
-  return link ? link.title : null;  // Returns the title attribute of the link if available
-}
-
-function getImageAlt(imageSrc) {
-  const img = document.querySelector(`img[src="${imageSrc}"]`);
-  return img ? img.alt : null;  // Returns the alt attribute of the image if available
-}
-
-
-
 // Listen for changes in the webhooks data to update context menus
 chrome.storage.onChanged.addListener(updateWebhookMenus);
