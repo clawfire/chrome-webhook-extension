@@ -1,0 +1,78 @@
+name: User Support Request
+description: Need help using the Webhook Manager extension?
+title: "[HELP] "
+labels: ["help wanted", "user support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for using Webhook Manager! Please fill out this form to help us assist you better.
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: What kind of help do you need?
+      description: Select the type of issue you're experiencing
+      options:
+        - Extension won't install or load
+        - Can't add or save webhooks
+        - Context menu not appearing
+        - Webhooks not sending data
+        - Other issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe your issue
+      description: Tell us what you're trying to do and what's happening
+      placeholder: I'm trying to... but when I... then...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-tried
+    attributes:
+      label: What have you already tried?
+      description: Let us know what troubleshooting steps you've attempted
+      placeholder: |
+        - Restarted Chrome
+        - Disabled and re-enabled the extension
+        - Checked webhook URL is correct
+        - etc.
+
+  - type: input
+    id: chrome-version
+    attributes:
+      label: Chrome Version
+      description: Find this in Chrome menu > Help > About Google Chrome
+      placeholder: e.g., Version 120.0.6099.129
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - ChromeOS
+        - Other
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension Version
+      description: Find this in chrome://extensions
+      placeholder: e.g., 1.2
+
+  - type: checkboxes
+    id: basic-checks
+    attributes:
+      label: Basic troubleshooting checklist
+      description: Please confirm you've tried these basic steps
+      options:
+        - label: I've restarted Chrome
+        - label: I've checked that the extension is enabled in chrome://extensions
+        - label: I've verified my webhook URL is correct and accessible
