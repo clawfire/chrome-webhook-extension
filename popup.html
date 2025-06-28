@@ -57,6 +57,13 @@
     </form>
     <h2>Registered Webhooks</h2>
     <ul id="webhookList"></ul>
+    
+    <h2>Settings</h2>
+    <form id="settingsForm" class="pure-form pure-form-stacked">
+      <label for="notificationInterval">Notification Update Interval (seconds):</label>
+      <input type="number" id="notificationInterval" class="pure-input-1" min="1" max="60" value="5">
+      <button type="submit" class="pure-button pure-button-secondary pure-input-1-4">Save Settings</button>
+    </form>
   </div>
   <script src="popup.js"></script>
 </body>

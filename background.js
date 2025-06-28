@@ -1,5 +1,6 @@
 // Webhook queue management
 const webhookQueues = new Map(); // Map of webhookUrl -> { queue: [], lastSent: timestamp, timer: timeoutId }
+const queueNotifications = new Map(); // Map of notificationId -> { webhookUrl, intervalId }
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -62,15 +63,7 @@ function addToQueue(webhookUrl, payload, webhookName, rateLimit = 0) {
   const willBeQueued = queueData.rateLimit > 0 && (queueData.queue.length > 1 || timeSinceLastSent < rateLimitMs);
   
   if (willBeQueued) {
-    const waitTime = queueData.rateLimit > 0 ? Math.max(0, rateLimitMs - timeSinceLastSent) : 0;
-    const queuePosition = queueData.queue.length;
-    const estimatedDelay = Math.ceil((waitTime + (queuePosition - 1) * rateLimitMs) / 1000);
-    
-    showNotification(
-      `⏳ ${webhookName} - Queued`, 
-      `Webhook queued (${queuePosition} in queue, ~${estimatedDelay}s wait)`, 
-      true
-    );
+    showQueueNotification(webhookUrl, webhookName);
   }
   
   processQueue(webhookUrl);
@@ -102,6 +95,9 @@ function processQueue(webhookUrl) {
   // Send the next item in queue
   const item = queueData.queue.shift();
   queueData.lastSent = now;
+  
+  // Clear any existing queue notification for this webhook
+  clearQueueNotification(webhookUrl);
   
   postToWebhookDirect(webhookUrl, item.payload, 3, item.webhookName);
   
@@ -302,6 +298,60 @@ function showNotification(title, message, isSuccess = true) {
     title: title,
     message: message
   });
+}
+
+function showQueueNotification(webhookUrl, webhookName) {
+  const notificationId = `queue_${webhookUrl}_${Date.now()}`;
+  
+  // Clear any existing notification for this webhook
+  clearQueueNotification(webhookUrl);
+  
+  // Get notification interval from settings
+  chrome.storage.local.get({ settings: { notificationInterval: 5 } }, function (data) {
+    const updateIntervalMs = data.settings.notificationInterval * 1000;
+    
+    function updateNotification() {
+      const queueData = webhookQueues.get(webhookUrl);
+      if (!queueData || queueData.queue.length === 0) {
+        clearQueueNotification(webhookUrl);
+        return;
+      }
+      
+      const now = Date.now();
+      const timeSinceLastSent = now - queueData.lastSent;
+      const rateLimitMs = queueData.rateLimit * 1000;
+      const waitTime = Math.max(0, rateLimitMs - timeSinceLastSent);
+      const queuePosition = queueData.queue.length;
+      const totalWait = Math.ceil((waitTime + (queuePosition - 1) * rateLimitMs) / 1000);
+      
+      chrome.notifications.create(notificationId, {
+        type: 'basic',
+        iconUrl: 'images/icon48.png',
+        title: `⏳ ${webhookName} - Queued`,
+        message: `${queuePosition} in queue, ~${totalWait}s remaining`
+      });
+    }
+    
+    // Initial notification
+    updateNotification();
+    
+    // Update at configured interval
+    const intervalId = setInterval(updateNotification, updateIntervalMs);
+    
+    queueNotifications.set(webhookUrl, { notificationId, intervalId });
+    
+    // Auto-clear after 60 seconds to prevent indefinite notifications
+    setTimeout(() => clearQueueNotification(webhookUrl), 60000);
+  });
+}
+
+function clearQueueNotification(webhookUrl) {
+  const notification = queueNotifications.get(webhookUrl);
+  if (notification) {
+    clearInterval(notification.intervalId);
+    chrome.notifications.clear(notification.notificationId);
+    queueNotifications.delete(webhookUrl);
+  }
 }
 
 function postToWebhookDirect(webhookUrl, payload, retryCount = 3, webhookName = 'Webhook') {

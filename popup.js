@@ -275,4 +275,41 @@ function clearForm() {
   delete document.getElementById('webhookForm').dataset.index; // Remove index from dataset
 }
 
-document.addEventListener('DOMContentLoaded', loadWebhooks);
+// Settings management
+function loadSettings() {
+  chrome.storage.local.get({ settings: { notificationInterval: 5 } }, function (data) {
+    if (chrome.runtime.lastError) {
+      console.error('Failed to load settings:', chrome.runtime.lastError);
+      return;
+    }
+    
+    document.getElementById('notificationInterval').value = data.settings.notificationInterval;
+  });
+}
+
+document.getElementById('settingsForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const notificationInterval = parseInt(document.getElementById('notificationInterval').value);
+  
+  if (isNaN(notificationInterval) || notificationInterval < 1 || notificationInterval > 60) {
+    showError('Notification interval must be between 1 and 60 seconds.');
+    return;
+  }
+  
+  const settings = { notificationInterval };
+  
+  chrome.storage.local.set({ settings }, function () {
+    if (chrome.runtime.lastError) {
+      console.error('Failed to save settings:', chrome.runtime.lastError);
+      showError('Error saving settings. Please try again.');
+      return;
+    }
+    
+    showSuccess('Settings saved successfully!');
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadWebhooks();
+  loadSettings();
+});
