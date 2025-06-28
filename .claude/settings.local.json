@@ -1,3 +1,10 @@
 {
-  "enableAllProjectMcpServers": false
+  "enableAllProjectMcpServers": false,
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git tag:*)"
+    ],
+    "deny": []
+  }
 }

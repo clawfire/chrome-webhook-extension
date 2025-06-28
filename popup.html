@@ -8,63 +8,518 @@
   <link rel="stylesheet" href="https://kit.fontawesome.com/fbe538cf33.css" crossorigin="anonymous">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body, html {
-        min-width: 300px; /* Set the minimum width */
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif; /* Example font */
+    :root {
+      --primary-color: #0078d4;
+      --primary-hover: #106ebe;
+      --success-color: #107c10;
+      --warning-color: #ffaa44;
+      --danger-color: #d83b01;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --border-color: #e1e5e9;
+      --text-primary: #323130;
+      --text-secondary: #605e5c;
+      --shadow: 0 2px 8px rgba(0,0,0,0.1);
+      --border-radius: 6px;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
     }
 
-    .content{
-      margin: 1em 0.5em;
-    }
-    #webhookList{
-      list-style: none;
+    body, html {
+      min-width: 400px;
+      width: 400px;
+      min-height: 600px;
+      height: 600px;
+      margin: 0;
       padding: 0;
-      max-height: 1200px; /* Maximum height before scrolling */
-      overflow-y: auto; /* Enables vertical scrolling */
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.5;
     }
-    #webhookList li{
-      margin: 0.5em 0;
+
+    /* Header */
+    .header {
+      background: var(--bg-primary);
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
     }
-    .button-warning {
-        background: rgb(223, 117, 20);
-        /* this is an orange */
-        color: white;
-        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+
+    .header-content {
+      display: flex;
+      align-items: baseline;
+      gap: var(--spacing-md);
     }
-    #error-message {
-        display: none;
-        background: #ff6b6b;
-        color: white;
-        padding: 0.5em;
-        margin: 0.5em 0;
-        border-radius: 3px;
-        font-size: 0.9em;
+
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-color);
     }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .header-subtitle a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .header-subtitle a:hover {
+      color: var(--primary-color);
+      text-decoration: underline;
+    }
+
+    /* Tab Navigation */
+    .tab-container {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-nav {
+      display: flex;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tab-nav li {
+      flex: 1;
+    }
+
+    .tab-nav button {
+      width: 100%;
+      padding: var(--spacing-md);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-nav button:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .tab-nav button.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      background: var(--bg-primary);
+    }
+
+    /* Content Areas */
+    .content {
+      padding: var(--spacing-lg);
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Forms */
+    .form-section {
+      background: var(--bg-primary);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .form-header {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .form-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      transition: all 0.2s ease;
+    }
+
+    .form-close-btn:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .form-close-btn:focus {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+
+    .form-content {
+      padding: var(--spacing-lg);
+    }
+
+    .add-webhook-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      width: 100%;
+      padding: var(--spacing-md);
+      background: var(--bg-primary);
+      border: 2px dashed var(--border-color);
+      border-radius: var(--border-radius);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: var(--spacing-lg);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .add-webhook-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background: rgba(0, 120, 212, 0.05);
+    }
+
+    .add-webhook-btn i {
+      font-size: 16px;
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: var(--spacing-xs);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid transparent;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .btn-success {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .btn-warning {
+      background: var(--warning-color);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 12px;
+    }
+
+    /* Webhook Cards */
+    .webhook-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .webhook-card {
+      background: var(--bg-primary);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+
+    .webhook-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+
+    .webhook-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .webhook-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .webhook-url {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin: var(--spacing-xs) 0;
+      word-break: break-all;
+    }
+
+    .webhook-meta {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin: var(--spacing-sm) 0;
+    }
+
+    .badge {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .badge-rate-limit {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .webhook-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+      margin-top: var(--spacing-md);
+    }
+
+    /* Messages */
+    .message {
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+    }
+
+    .message-error {
+      background: #ffeaea;
+      color: var(--danger-color);
+      border: 1px solid #ffcdd2;
+    }
+
+    .message-success {
+      background: #e8f5e8;
+      color: var(--success-color);
+      border: 1px solid #c8e6c9;
+    }
+
+    .message.hidden {
+      display: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-xl);
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: var(--spacing-md);
+      opacity: 0.5;
+    }
+
+    /* Utilities */
+    .hidden {
+      display: none !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-0 { margin-top: 0; }
+    .mb-0 { margin-bottom: 0; }
+    .mb-sm { margin-bottom: var(--spacing-sm); }
+    .mb-md { margin-bottom: var(--spacing-md); }
   </style>
 </head>
 
 <body>
-  <div class="content">
-    <h1>Register or Update a Webhook</h1>
-    <div id="error-message"></div>
-    <form id="webhookForm" class="pure-form pure-form-stacked">
-      <input type="text" id="url" class="pure-input-1" placeholder="Enter Webhook URL" required>
-      <input type="text" id="name" class="pure-input-1" placeholder="Friendly Name" required>
-      <input type="number" id="rateLimit" class="pure-input-1" placeholder="Rate limit (seconds, 0 = no limit)" min="0">
-      <button type="submit" class="pure-button pure-button-primary pure-input-1-4">Save</button>
-    </form>
-    <h2>Registered Webhooks</h2>
-    <ul id="webhookList"></ul>
-    
-    <h2>Settings</h2>
-    <form id="settingsForm" class="pure-form pure-form-stacked">
-      <label for="notificationInterval">Notification Update Interval (seconds):</label>
-      <input type="number" id="notificationInterval" class="pure-input-1" min="1" max="60" value="5">
-      <button type="submit" class="pure-button pure-button-secondary pure-input-1-4">Save Settings</button>
-    </form>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1><i class="fa fa-webhook"></i> Webhook Manager</h1>
+      <span class="header-subtitle">by <a href="https://thibaultmilan.com" target="_blank" rel="noopener noreferrer">Thibault Milan</a></span>
+    </div>
   </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-container">
+    <ul class="tab-nav">
+      <li><button class="tab-btn active" data-tab="webhooks"><i class="fa fa-list"></i> Webhooks</button></li>
+      <li><button class="tab-btn" data-tab="settings"><i class="fa fa-cog"></i> Settings</button></li>
+    </ul>
+  </div>
+
+  <!-- Messages -->
+  <div id="message-container"></div>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- Webhooks Tab -->
+    <div id="webhooks-tab" class="tab-content active">
+      <!-- Add Webhook Button (when collapsed) -->
+      <button class="add-webhook-btn" id="add-webhook-trigger">
+        <i class="fa fa-plus"></i>
+        <span>Add New Webhook</span>
+      </button>
+
+      <!-- Add/Edit Webhook Form -->
+      <div class="form-section" id="webhook-form-section" style="display: none;">
+        <div class="form-header">
+          <h3 id="form-title"><i class="fa fa-plus"></i> Add New Webhook</h3>
+          <button type="button" class="form-close-btn" id="form-close-btn" title="Close form">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <div class="form-content">
+          <form id="webhookForm">
+            <div class="form-group">
+              <label for="url">Webhook URL</label>
+              <input type="text" id="url" class="form-input" placeholder="https://example.com/webhook" required>
+            </div>
+            <div class="form-group">
+              <label for="name">Display Name</label>
+              <input type="text" id="name" class="form-input" placeholder="My Webhook" required>
+            </div>
+            <div class="form-group">
+              <label for="rateLimit">Rate Limit (seconds)</label>
+              <input type="number" id="rateLimit" class="form-input" placeholder="0 = no limit" min="0">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-save"></i> <span id="save-btn-text">Save Webhook</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Webhook List -->
+      <div class="webhook-list" id="webhookList">
+        <!-- Webhooks will be dynamically inserted here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state hidden">
+        <i class="fa fa-webhook"></i>
+        <h3>No Webhooks Yet</h3>
+        <p>Add your first webhook to get started</p>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <div class="form-section">
+        <div class="form-header">
+          <h3><i class="fa fa-bell"></i> Notification Settings</h3>
+        </div>
+        <div class="form-content">
+          <form id="settingsForm">
+            <div class="form-group">
+              <label for="notificationInterval">Update Interval (seconds)</label>
+              <input type="number" id="notificationInterval" class="form-input" min="1" max="60" value="5">
+              <small style="color: var(--text-secondary); font-size: 12px;">How often queue notifications update (1-60 seconds)</small>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-save"></i> Save Settings
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 
