@@ -33,6 +33,14 @@ document.getElementById('webhookForm').addEventListener('submit', function (e) {
     return;
   }
 
+  const rateLimit = document.getElementById('rateLimit').value.trim();
+  const rateLimitValue = rateLimit ? parseInt(rateLimit) : 0;
+
+  if (rateLimit && (isNaN(rateLimitValue) || rateLimitValue < 0)) {
+    showError('Rate limit must be a positive number (seconds).');
+    return;
+  }
+
   chrome.storage.local.get({ webhooks: [] }, function (data) {
 
     // Error handling here
@@ -46,10 +54,10 @@ document.getElementById('webhookForm').addEventListener('submit', function (e) {
     const index = document.getElementById('webhookForm').dataset.index;
     if (index !== undefined) {
       // Update existing webhook
-      webhooks[index] = { url, name };
+      webhooks[index] = { url, name, rateLimit: rateLimitValue };
     } else {
       // Add new webhook
-      webhooks.push({ url, name });
+      webhooks.push({ url, name, rateLimit: rateLimitValue });
     }
     chrome.storage.local.set({ webhooks: webhooks }, function () {
       // Error handling here
@@ -114,7 +122,8 @@ function loadWebhooks() {
       buttonGroup.appendChild(deleteButton);
 
       const item = document.createElement('li');
-      item.textContent = `${hook.name}: ${hook.url}`;
+      const rateLimitText = hook.rateLimit && hook.rateLimit > 0 ? ` (${hook.rateLimit}s limit)` : '';
+      item.textContent = `${hook.name}: ${hook.url}${rateLimitText}`;
 
         // Append the button group to the list container
         item.appendChild(buttonGroup);
@@ -149,6 +158,7 @@ function editWebhook(index) {
     const webhook = webhooks[index];
     document.getElementById('url').value = webhook.url;
     document.getElementById('name').value = webhook.name;
+    document.getElementById('rateLimit').value = webhook.rateLimit || '';
     document.getElementById('webhookForm').dataset.index = index; // Store index for saving changes
   });
 }
@@ -261,6 +271,7 @@ function showSuccess(message) {
 function clearForm() {
   document.getElementById('url').value = '';
   document.getElementById('name').value = '';
+  document.getElementById('rateLimit').value = '';
   delete document.getElementById('webhookForm').dataset.index; // Remove index from dataset
 }
 

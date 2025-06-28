@@ -52,6 +52,7 @@
     <form id="webhookForm" class="pure-form pure-form-stacked">
       <input type="text" id="url" class="pure-input-1" placeholder="Enter Webhook URL" required>
       <input type="text" id="name" class="pure-input-1" placeholder="Friendly Name" required>
+      <input type="number" id="rateLimit" class="pure-input-1" placeholder="Rate limit (seconds, 0 = no limit)" min="0">
       <button type="submit" class="pure-button pure-button-primary pure-input-1-4">Save</button>
     </form>
     <h2>Registered Webhooks</h2>
