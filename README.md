@@ -1,4 +1,4 @@
-# Webhook Manager Chrome Extension v2.1
+# Webhook Manager Chrome Extension v2.2
 
 This extension was born out of an irresistible drive to solve a specific problem: the need to send URLs of elements on a webpage directly to my N8N workflow for automating my tech watch. In the world of software development, finding no existing solutions that support the latest Chrome Manifest V3 was not just a challenge—it was an unavoidable call to action. For someone with ADHD, the impulse to dive deep into a problem and craft a solution isn't just a choice; it's often an innate response that cannot be ignored.
 
@@ -6,7 +6,16 @@ The rapid creation of the first prototype within an hour and the additional enha
 
 This project isn't merely a functional tool; it's a personal statement and a beacon for others in the tech industry who might find themselves similarly driven by their neurodivergent traits. It serves as a reminder that our unique wiring can lead to powerful bursts of innovation and that embracing this can lead to practical, impactful solutions. Here's to all the software developers living with ADHD: Your intense need to solve problems, create solutions, or improve systems is not just a challenge—it's also your superpower.
 
-## ✨ What's New in v2.1
+## ✨ What's New in v2.2
+
+### 🔄 **Drag-and-Drop Webhook Reordering**
+- **Drag to reorder** webhooks with intuitive visual feedback
+- **Grip handle** appears on hover for easy grabbing
+- **Real-time persistence** - new order saves automatically
+- **Context menu sync** - right-click menus update instantly
+- **Smooth animations** with visual states during drag operations
+
+## What Was New in v2.1
 
 ### 💾 **Import/Export Configuration**
 - **Export webhooks** to timestamped JSON files for backup
@@ -41,6 +50,7 @@ This project isn't merely a functional tool; it's a personal statement and a bea
 
 ### Core Functionality
 - **Register and Manage Webhooks**: Add, edit, and delete webhooks with friendly names, URLs, and rate limits
+- **Drag-and-Drop Reordering**: Easily reorder webhooks by dragging cards with visual feedback
 - **Context Menu Integration**: Right-click on any page, link, image, or selected text to send data to registered webhooks
 - **Enhanced Data Collection**: Automatically extracts page metadata, timestamps, and context-specific information
 - **Webhook Testing**: Test webhooks directly from the popup with response time and status feedback
@@ -212,6 +222,14 @@ Contributions are welcome! Please:
 4. Test across different webpage contexts
 
 ## Changelog
+
+### v2.2.0 (2025-12-21)
+- **NEW**: Drag-and-drop webhook reordering with HTML5 drag API
+- **NEW**: Grip handle icon that appears on card hover
+- **NEW**: Visual feedback during drag operations (opacity, borders)
+- **IMPROVED**: Webhook order now customizable and persists to storage
+- **IMPROVED**: Context menus automatically sync with new webhook order
+- **IMPROVED**: Smooth animations and transitions for drag states
 
 ### v2.1.0 (2025-12-21)
 - **NEW**: Import/Export configuration feature for backup and restore

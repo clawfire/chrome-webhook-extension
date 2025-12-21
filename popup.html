@@ -314,9 +314,11 @@
     }
 
     .webhook-card {
+      position: relative;
       background: var(--bg-primary);
       border-radius: var(--border-radius);
       padding: var(--spacing-md);
+      padding-left: 36px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border-color);
       transition: all 0.2s ease;
@@ -371,6 +373,49 @@
       display: flex;
       gap: var(--spacing-xs);
       margin-top: var(--spacing-md);
+    }
+
+    /* Drag and Drop */
+    .drag-handle {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: grab;
+      color: var(--text-secondary);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      font-size: 14px;
+      padding: 4px;
+      user-select: none;
+    }
+
+    .webhook-card:hover .drag-handle {
+      opacity: 0.6;
+    }
+
+    .drag-handle:hover {
+      opacity: 1 !important;
+      color: var(--primary-color);
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .webhook-card.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .webhook-card.drag-over {
+      border: 2px dashed var(--primary-color);
+      background: rgba(0, 120, 212, 0.05);
+      transform: translateY(0);
+    }
+
+    .webhook-list {
+      transition: all 0.2s ease;
     }
 
     /* Messages */

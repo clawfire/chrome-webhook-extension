@@ -51,7 +51,15 @@ function switchTab(tabName) {
 function createWebhookCard(hook, index) {
   const card = document.createElement('div');
   card.className = 'webhook-card';
-  
+  card.draggable = true;
+  card.dataset.index = index;
+
+  // Create drag handle
+  const dragHandle = document.createElement('div');
+  dragHandle.className = 'drag-handle';
+  dragHandle.innerHTML = '<i class="fa fa-grip-vertical"></i>';
+  dragHandle.title = 'Drag to reorder';
+
   const header = document.createElement('div');
   header.className = 'webhook-header';
   
@@ -106,14 +114,15 @@ function createWebhookCard(hook, index) {
   actions.appendChild(testButton);
   actions.appendChild(editButton);
   actions.appendChild(deleteButton);
-  
+
   header.appendChild(titleContainer);
+  card.appendChild(dragHandle);
   card.appendChild(header);
   if (meta.children.length > 0) {
     card.appendChild(meta);
   }
   card.appendChild(actions);
-  
+
   return card;
 }
 
@@ -133,6 +142,15 @@ function loadWebhooks() {
       emptyState.classList.add('hidden');
       data.webhooks.forEach(function (hook, index) {
         const card = createWebhookCard(hook, index);
+
+        // Attach drag event listeners
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('drop', handleDrop);
+        card.addEventListener('dragenter', handleDragEnter);
+        card.addEventListener('dragleave', handleDragLeave);
+        card.addEventListener('dragend', handleDragEnd);
+
         list.appendChild(card);
       });
     } else {
@@ -296,6 +314,89 @@ function clearForm() {
   document.getElementById('form-title').innerHTML = '<i class="fa fa-plus"></i> Add New Webhook';
   document.getElementById('save-btn-text').textContent = 'Save Webhook';
   delete document.getElementById('webhookForm').dataset.index;
+}
+
+// Drag and Drop functionality
+let draggedElement = null;
+let draggedIndex = null;
+
+function handleDragStart(e) {
+  draggedElement = this;
+  draggedIndex = parseInt(this.dataset.index);
+
+  this.classList.add('dragging');
+
+  // Set drag data (required for Firefox)
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault(); // Allows drop
+  }
+  e.dataTransfer.dropEffect = 'move';
+  return false;
+}
+
+function handleDragEnter(e) {
+  if (this !== draggedElement) {
+    this.classList.add('drag-over');
+  }
+}
+
+function handleDragLeave(e) {
+  this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation(); // Stops browser from redirecting
+  }
+
+  if (draggedElement !== this) {
+    const dropIndex = parseInt(this.dataset.index);
+    reorderWebhooks(draggedIndex, dropIndex);
+  }
+
+  return false;
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+
+  // Remove all drag-over classes
+  const cards = document.querySelectorAll('.webhook-card');
+  cards.forEach(card => card.classList.remove('drag-over'));
+}
+
+function reorderWebhooks(fromIndex, toIndex) {
+  chrome.storage.local.get('webhooks', function (data) {
+    if (!data.webhooks) return;
+
+    const webhooks = data.webhooks;
+
+    // Remove item from original position
+    const [movedItem] = webhooks.splice(fromIndex, 1);
+
+    // Insert at new position
+    webhooks.splice(toIndex, 0, movedItem);
+
+    // Save reordered array
+    chrome.storage.local.set({ webhooks: webhooks }, function () {
+      if (chrome.runtime.lastError) {
+        console.error('Failed to reorder webhooks:', chrome.runtime.lastError);
+        showError('Error reordering webhooks. Please try again.');
+        return;
+      }
+
+      // Reload list with new order
+      loadWebhooks();
+
+      // Note: Context menus will be updated automatically by background.js storage listener
+      showSuccess('Webhooks reordered successfully!');
+    });
+  });
 }
 
 // Settings management
