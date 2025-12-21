@@ -517,6 +517,31 @@
           </form>
         </div>
       </div>
+
+      <div class="form-section">
+        <div class="form-header">
+          <h3><i class="fa fa-exchange-alt"></i> Import / Export</h3>
+        </div>
+        <div class="form-content">
+          <div class="form-group">
+            <label>Export Configuration</label>
+            <button type="button" class="btn btn-secondary" id="exportBtn">
+              <i class="fa fa-download"></i> Export Webhooks
+            </button>
+            <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: var(--spacing-xs);">Download your webhook configuration as a JSON file</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="importFile">Import Configuration</label>
+            <input type="file" id="importFile" class="form-input" accept=".json" style="padding: var(--spacing-sm);">
+            <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: var(--spacing-xs);">Upload a JSON file to restore webhook configuration</small>
+          </div>
+          
+          <button type="button" class="btn btn-primary" id="importBtn" disabled>
+            <i class="fa fa-upload"></i> Import Webhooks
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

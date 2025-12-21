@@ -450,6 +450,129 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
+  // Import/Export functionality
+  document.getElementById('exportBtn').addEventListener('click', exportWebhooks);
+  document.getElementById('importFile').addEventListener('change', handleFileSelect);
+  document.getElementById('importBtn').addEventListener('click', importWebhooks);
+  
   loadWebhooks();
   loadSettings();
 });
+
+// Export functionality
+function exportWebhooks() {
+  chrome.storage.local.get(['webhooks', 'settings'], function(data) {
+    if (chrome.runtime.lastError) {
+      console.error('Failed to fetch data for export:', chrome.runtime.lastError);
+      showError('Error exporting configuration. Please try again.');
+      return;
+    }
+    
+    const exportData = {
+      webhooks: data.webhooks || [],
+      settings: data.settings || { notificationInterval: 5 },
+      exportedAt: new Date().toISOString(),
+      version: '2.0'
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `webhook-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showSuccess('Configuration exported successfully!');
+  });
+}
+
+// File selection handler
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  const importBtn = document.getElementById('importBtn');
+  
+  if (file && file.type === 'application/json') {
+    importBtn.disabled = false;
+  } else {
+    importBtn.disabled = true;
+    if (file) {
+      showError('Please select a valid JSON file.');
+    }
+  }
+}
+
+// Import functionality
+function importWebhooks() {
+  const fileInput = document.getElementById('importFile');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    showError('Please select a file to import.');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importData = JSON.parse(e.target.result);
+      
+      // Validate import data structure
+      if (!validateImportData(importData)) {
+        showError('Invalid file format. Please select a valid webhook configuration file.');
+        return;
+      }
+      
+      // Import the data
+      chrome.storage.local.set({
+        webhooks: importData.webhooks,
+        settings: importData.settings
+      }, function() {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to import data:', chrome.runtime.lastError);
+          showError('Error importing configuration. Please try again.');
+          return;
+        }
+        
+        showSuccess(`Successfully imported ${importData.webhooks.length} webhooks!`);
+        loadWebhooks();
+        loadSettings();
+        
+        // Clear file input
+        fileInput.value = '';
+        document.getElementById('importBtn').disabled = true;
+      });
+      
+    } catch (error) {
+      console.error('Failed to parse import file:', error);
+      showError('Invalid JSON file. Please check the file format and try again.');
+    }
+  };
+  
+  reader.readAsText(file);
+}
+
+// Validate import data structure
+function validateImportData(data) {
+  if (!data || typeof data !== 'object') return false;
+  if (!Array.isArray(data.webhooks)) return false;
+  if (!data.settings || typeof data.settings !== 'object') return false;
+  
+  // Validate each webhook
+  for (const webhook of data.webhooks) {
+    if (!webhook.url || !webhook.name) return false;
+    if (!validateURL(webhook.url)) return false;
+    if (webhook.rateLimit !== undefined && (typeof webhook.rateLimit !== 'number' || webhook.rateLimit < 0)) return false;
+  }
+  
+  // Validate settings
+  if (data.settings.notificationInterval !== undefined) {
+    if (typeof data.settings.notificationInterval !== 'number' || 
+        data.settings.notificationInterval < 1 || 
+        data.settings.notificationInterval > 60) return false;
+  }
+  
+  return true;
+}

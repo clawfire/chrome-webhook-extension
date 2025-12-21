@@ -57,7 +57,7 @@ Webhooks are stored in Chrome local storage as:
 {
   "webhooks": [
     {
-      "name": "Friendly Name", 
+      "name": "Friendly Name",
       "url": "https://webhook.url",
       "rateLimit": 30
     }
@@ -98,7 +98,6 @@ Webhooks are stored in Chrome local storage as:
 - Complete interface redesign with card-based layout
 - Professional design system with CSS custom properties
 - Tabbed navigation (Webhooks | Settings)
-- Collapsible form design for space optimization
 - Enhanced typography and consistent spacing
 - Modern button states and hover effects
 - Accessible keyboard navigation

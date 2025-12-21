@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Webhook Manager",
   "description": "A Chrome extension that allows you to send data to webhooks.",
-  "version": "2.0",
+  "version": "2.1",
   "permissions": [
     "storage",
     "contextMenus",
